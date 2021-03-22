@@ -59,9 +59,15 @@ Switch to the terminal where Kafka server is running and stop the server hitting
 
 ## Liveness Probe
 
-The probe used to validate that the service is able to compute its result is defined as livenessProve, when it reports any HTTP STATUS out of the range 200 to 399 the probe will be flagged as failed, depending on configuration parameters K8s if the failure persists K8s will stop the pod´s container and relaunch a new container in the same pod, expecting that the condition can be solved with this refresh, giving the pod self-healing ability.  
+This probe is used to validate that the service is able to compute its result is defined as livenessProve, when it reports any HTTP STATUS out of the range 200 to 399 the probe will be flagged as failed, depending on configuration parameters K8s if the failure persists K8s will stop the pod´s container and relaunch a new container in the same pod, expecting that the condition can be solved with this refresh, giving the pod self-healing ability.  
 
-To run the livenessProbe by hand suse a `GET http://localhost:8080/health/liveness`; the application will respond with an HTTP status in the range 200 to 399 to pass the test, if the service is not available it will respond an HTTP status 503 (service unavailable) or timeout.
+To run the livenessProbe by hand use a `GET http://localhost:8080/health/liveness`; the application will respond with an HTTP status in the range 200 to 399 to pass the test, if the service is not available it will respond an HTTP status 503 (service unavailable) or timeout.
+
+## Readiness Probe
+
+This probe is used to validate that the service is able to receive network traffic and is defined as readinessProbe, when it reports any Http status between 200 and 399 the probe is successful, and the pod is enabled to receive network traffic. When the probe reports any status out of the range, or the call to the probe has a timeout, according to parameters in the probe configuration, the pod is marked as non available, and K8s suspends any network traffic to that pod for a while expecting that it becomes stable again, after a waiting time the probe is retried and the process repeats.
+
+To run the readinessProbe by hand use a `GET http://localhost:8080/health/readiness`; the application will respond with an HTTP status in the range 200 to 399 to pass the test, if the service is not available it will respond an HTTP status 503 (service unavailable) or timeout.
 
 ## Probes
 

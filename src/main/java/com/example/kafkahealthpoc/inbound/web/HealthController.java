@@ -28,4 +28,11 @@ public class HealthController {
                 ? ResponseEntity.ok("{\"status\":\"ALIVE\"}")
                 : ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
     }
+
+    @GetMapping("/readiness")
+    public ResponseEntity<String> readinessProbe() {
+        return healthControlPanel.checkReadiness()
+                ? ResponseEntity.ok("{\"status\":\"READY\"}")
+                : ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+    }
 }
