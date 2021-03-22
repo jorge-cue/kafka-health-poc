@@ -66,7 +66,7 @@ public class KafkaHealthPocConfig {
     @Bean
     public ConsumerFactory<String, String> consumerFactory(HealthControlPanel healthControlPanel) {
         return new DefaultKafkaConsumerFactory<>(consumerProps()) {
-            // This override allows us to user KafkaHealthPocConsumer instead of the default KafkaConsumer
+            // This override allows us to use KafkaHealthPocConsumer instead of the default KafkaConsumer
             // It is supposed that KafkaHealthPocConsumer handles allows us to control listener status in
             // HealthControlPanel
             @Override
