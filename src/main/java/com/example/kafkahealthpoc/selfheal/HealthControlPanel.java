@@ -4,14 +4,13 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
@@ -75,7 +74,7 @@ public class HealthControlPanel {
          */
         try(KafkaAdminClient adminClient = (KafkaAdminClient) AdminClient.create(adminProperties())) {
             var result = adminClient.describeTopics(List.of(MY_TOPIC)).values();
-            var topicDescription = result.get(MY_TOPIC).get(5, TimeUnit.SECONDS);
+            var topicDescription = result.get(MY_TOPIC).get();
             log.info("Description found for topic {}", topicDescription);
             return true;
         } catch (Exception x) {
@@ -86,7 +85,10 @@ public class HealthControlPanel {
 
     private Map<String, Object> adminProperties() {
         var props = new HashMap<String, Object>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 1000);
+        props.put(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 5000);
+        props.put(AdminClientConfig.CLIENT_ID_CONFIG, "khp-admin");
         return props;
     }
 
