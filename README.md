@@ -1,8 +1,16 @@
 # Kafka Health Proof of Concept
 
+## Introduction
+
+The concept to test with this project is to try to enable the monitoring of the Kafka connections (listeners and producers) and use it to respond to readiness and liveness probes on Kubernetes (K8s).
+
+### Results so far
+
+So far I am not able to detect when Kafka becomes unavailable neither for listeners nor producers.
+
 ## How to run the tests
 
-### Step 1: Get Kafka
+### Step 1: Get Kafka in your local machine
 
 [Download](https://www.apache.org/dyn/closer.cgi?path=/kafka/2.7.0/kafka_2.13-2.7.0.tgz]) the latest Kafka release and extract it:
 ```
@@ -43,7 +51,7 @@ Send an HTTP PUT to the address `http://localhost:8080/send/{{message}}` where `
 
 For example `PUT http://localhost:8080/send/Hello%20World`
 
-The service shall respond with an HTTP STATUS 202 (Accepted) and the application should log the following entries:
+The service shall respond with an HTTP STATUS 202 (Accepted), and the application should log the following entries:
 
 ```
  c.e.k.inbound.web.SenderController       : Success sending message: Hello World
