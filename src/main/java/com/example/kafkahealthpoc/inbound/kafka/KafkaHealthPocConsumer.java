@@ -25,14 +25,21 @@ public class KafkaHealthPocConsumer<K, V> extends KafkaConsumer<K, V> {
     @Override
     public ConsumerRecords<K, V> poll(Duration timeout) {
         try {
+            log.info("polling for records.");
             var records =  super.poll(timeout);
+            log.info("Records polled {}", records.count());
             healthControlPanel.setListenerAlive();
             return records;
         } catch (KafkaException kafkaException) {
-            log.error("Error polling from Kafka topics {}",
-                    String.join(", ", listTopics().keySet()), kafkaException);
+            log.error("KafkaException polling from Kafka topics {}: {}",
+                    String.join(", ", listTopics().keySet()), kafkaException.getMessage(), kafkaException);
             healthControlPanel.setListenerNotAlive();
             throw kafkaException;
+        } catch(Exception exception) {
+            log.error("Exception polling from Kafka topics {}: {}",
+                    String.join(", ", listTopics().keySet()), exception.getMessage(), exception);
+            healthControlPanel.setListenerNotAlive();
+            throw exception;
         }
     }
 }

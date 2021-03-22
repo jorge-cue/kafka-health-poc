@@ -6,11 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.KafkaException;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
@@ -19,9 +22,11 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.ErrorHandler;
+import org.springframework.kafka.listener.GenericErrorHandler;
 import org.springframework.kafka.listener.LoggingErrorHandler;
-import org.springframework.kafka.listener.MessageListenerContainer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +35,7 @@ import java.util.Map;
  * Created by jhcue on 21/03/2021
  */
 @Configuration
+@EnableKafka
 @Slf4j
 public class KafkaHealthPocConfig {
 
@@ -37,19 +43,21 @@ public class KafkaHealthPocConfig {
 
     @Bean
     public NewTopic topic1() {
-        return TopicBuilder.name("topic1").partitions(1).replicas(0).build();
+        return TopicBuilder.name("topic1").partitions(1).replicas(1).build();
     }
 
     // Listener configuration
 
-    @Bean
-    public KafkaListenerContainerFactory<? extends MessageListenerContainer> kafkaListenerContainerFactory(
+    @Bean("kafkaListenerContainerFactory")
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> kafkaListenerContainerFactory(
             ConsumerFactory<String, String> consumerFactory,
-            ErrorHandler errorHandler
-    ) {
+            ErrorHandler errorHandler) {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, String>();
         factory.setConsumerFactory(consumerFactory);
         factory.setErrorHandler(errorHandler);
+        factory.getContainerProperties().setPollTimeout(3000);
+        factory.getContainerProperties().setStopContainerWhenFenced(true);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
         return factory;
     }
 
@@ -61,6 +69,9 @@ public class KafkaHealthPocConfig {
     @Bean
     public ConsumerFactory<String, String> consumerFactory(HealthControlPanel healthControlPanel) {
         return new DefaultKafkaConsumerFactory<>(consumerProps()) {
+            // This override allows us to user KafkaHealthPocConsumer instead of the default KafkaConsumer
+            // It is supposed that KafkaHealthPocConsumer handles allows us to control listener status in
+            // HealthControlPanel
             @Override
             protected Consumer<String, String> createRawConsumer(Map<String, Object> configProps) {
                 log.info("Creating KafkaHealthPocConsumer");

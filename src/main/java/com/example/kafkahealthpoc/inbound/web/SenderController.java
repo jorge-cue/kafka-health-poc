@@ -52,6 +52,7 @@ public class SenderController {
                     healthControlPanel.setListenerNotAlive();
                 }
         );
+        kafkaTemplate.flush();
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }
