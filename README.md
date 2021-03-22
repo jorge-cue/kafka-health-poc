@@ -7,6 +7,7 @@ The concept to test with this project is to try to enable the monitoring of the 
 ### Results so far
 
 So far I am not able to detect when Kafka becomes unavailable neither for listeners nor producers.
+But we can detect for kafka presence and availability on the livenessProbe, please see class HealthControlPanel for the solution.
 
 ## How to run the tests
 
@@ -19,6 +20,7 @@ cd kafka_2.13-2.7.0
 ```
 
 ### Step 2: Start the Kafka environment
+
 Note: Your local environment must have Java 8+ installed.
 
 Open a terminal and run the following commands to start zookeeper.
@@ -61,9 +63,13 @@ The service shall respond with an HTTP STATUS 202 (Accepted), and the applicatio
 ```
 Fields partition offset key my vary, but the general schema should be the same.
 
-### Step 5: Force an error
+### Step 5: Force and detect Kafka down error
+
+Hit the [livenessProve](http://localhost:8080/health/liveness) before stopping Kafka server, must respond with an OK status.
 
 Switch to the terminal where Kafka server is running and stop the server hitting Control-C. The server should stop, and the application should detect some kind of error and report it in the log.
+
+Hit the [livenessProve](http://localhost:8080/health/liveness) after stopping Kafka server, must respond with an SERVICE_UNAVAILABLE status with a small delay.
 
 ## Liveness Probe
 
