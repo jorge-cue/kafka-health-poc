@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.BOOTSTRAP_SERVERS;
+import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
+
 /*
  * Created by jhcue on 21/03/2021
  */
@@ -22,7 +25,6 @@ public class HealthControlPanel {
 
     public static final String LISTENER_DEAD_COUNT = "listener-dead-count";
     public static final String PRODUCER_DEAD_COUNT = "producer-dead-count";
-    public static final String MY_TOPIC = "topic-1";
 
     private final AtomicBoolean listenerAvailable = new AtomicBoolean(true);
     private final AtomicBoolean producerAvailable = new AtomicBoolean(true);
@@ -73,8 +75,8 @@ public class HealthControlPanel {
          * for this application it means that Kafka is available for receiving and producing events (messages)
          */
         try(KafkaAdminClient adminClient = (KafkaAdminClient) AdminClient.create(adminProperties())) {
-            var result = adminClient.describeTopics(List.of(MY_TOPIC)).values();
-            var topicDescription = result.get(MY_TOPIC).get();
+            var result = adminClient.describeTopics(List.of(TOPIC_NAME)).values();
+            var topicDescription = result.get(TOPIC_NAME).get();
             log.info("Description found for topic {}", topicDescription);
             return true;
         } catch (Exception x) {
@@ -85,11 +87,10 @@ public class HealthControlPanel {
 
     private Map<String, Object> adminProperties() {
         var props = new HashMap<String, Object>();
-        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 1000);
         props.put(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 2000);
         props.put(AdminClientConfig.CLIENT_ID_CONFIG, "khp-admin");
         return props;
     }
-
 }

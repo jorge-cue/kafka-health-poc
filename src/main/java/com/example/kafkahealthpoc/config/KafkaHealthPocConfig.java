@@ -36,11 +36,14 @@ import java.util.Map;
 @Slf4j
 public class KafkaHealthPocConfig {
 
+    public static final String TOPIC_NAME = "kafka-health-poc-topic";
+    public static final String BOOTSTRAP_SERVERS = "localhost:9092";
+
     // Topic configuration
 
     @Bean
     public NewTopic topic1() {
-        return TopicBuilder.name("topic1").partitions(1).replicas(1).build();
+        return TopicBuilder.name(TOPIC_NAME).partitions(1).replicas(1).build();
     }
 
     // Listener configuration
@@ -79,8 +82,8 @@ public class KafkaHealthPocConfig {
 
     private Map<String, Object> consumerProps() {
         var props = new HashMap<String, Object>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "group-poc");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "khp-consumer-group-id");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
@@ -95,8 +98,7 @@ public class KafkaHealthPocConfig {
 
     private Map<String, Object> senderProps() {
         var props = new HashMap<String, Object>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ProducerConfig.LINGER_MS_CONFIG, 10);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.ACKS_CONFIG, "all");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);

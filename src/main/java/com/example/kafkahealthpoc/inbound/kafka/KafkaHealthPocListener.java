@@ -5,6 +5,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
+
 /*
  * Created by jhcue on 21/03/2021
  */
@@ -13,12 +15,11 @@ import org.springframework.stereotype.Component;
 public class KafkaHealthPocListener {
 
     @KafkaListener(
-            id = "khp-id",
-            groupId = "khp-group",
-            topics = "topic-1"
+            id = "kafka-health-poc-listener-id",
+            topics = TOPIC_NAME
     )
     public void handleRecord(ConsumerRecord<String, String> record) {
-        log.info("processing record: {}\ttopic {} partition {} offset {} key {} value {}",
+        log.info("processing record: {}\ntopic {} partition {} offset {} key {} value {}",
                 record.value(),
                 record.topic(), record.partition(), record.offset(), record.key(), record.value());
     }

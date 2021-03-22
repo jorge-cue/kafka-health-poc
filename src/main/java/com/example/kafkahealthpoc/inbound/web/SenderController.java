@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
+
 /*
  * Created by jhcue on 21/03/2021
  */
@@ -22,7 +24,7 @@ import java.util.UUID;
 public class SenderController {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
-    // Assign all messages for this run the same key.
+    // Assign all messages for this run the same key, just because!
     private final String key = UUID.randomUUID().toString();
 
     private final HealthControlPanel healthControlPanel;
@@ -34,7 +36,7 @@ public class SenderController {
 
     @PutMapping(value = "/{message}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> putMessage(@PathVariable String message) {
-        var future = kafkaTemplate.send("topic-1", key, message);
+        var future = kafkaTemplate.send(TOPIC_NAME, key, message);
         future.addCallback(
                 // SuccessCallback
                 data -> {
