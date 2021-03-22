@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
@@ -74,7 +75,7 @@ public class HealthControlPanel {
          */
         try(KafkaAdminClient adminClient = (KafkaAdminClient) AdminClient.create(adminProperties())) {
             var result = adminClient.describeTopics(List.of(MY_TOPIC)).all();
-            var descriptionMap = result.get();
+            var descriptionMap = result.get(5, TimeUnit.SECONDS);
             log.info("Description found for topic {}", descriptionMap.get(MY_TOPIC));
             return descriptionMap.containsKey(MY_TOPIC);
         } catch (Exception x) {
