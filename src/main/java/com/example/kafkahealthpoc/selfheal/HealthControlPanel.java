@@ -87,7 +87,7 @@ public class HealthControlPanel {
         var props = new HashMap<String, Object>();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 1000);
-        props.put(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 5000);
+        props.put(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 2000);
         props.put(AdminClientConfig.CLIENT_ID_CONFIG, "khp-admin");
         return props;
     }
