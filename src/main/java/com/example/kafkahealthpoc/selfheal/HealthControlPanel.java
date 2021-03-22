@@ -74,10 +74,10 @@ public class HealthControlPanel {
          * for this application it means that Kafka is available for receiving and producing events (messages)
          */
         try(KafkaAdminClient adminClient = (KafkaAdminClient) AdminClient.create(adminProperties())) {
-            var result = adminClient.describeTopics(List.of(MY_TOPIC)).all();
-            var descriptionMap = result.get(5, TimeUnit.SECONDS);
-            log.info("Description found for topic {}", descriptionMap.get(MY_TOPIC));
-            return descriptionMap.containsKey(MY_TOPIC);
+            var result = adminClient.describeTopics(List.of(MY_TOPIC)).values();
+            var topicDescription = result.get(MY_TOPIC).get(5, TimeUnit.SECONDS);
+            log.info("Description found for topic {}", topicDescription);
+            return true;
         } catch (Exception x) {
             log.error("Error getting description of our topic(s); Is Kafka available?", x);
         }
