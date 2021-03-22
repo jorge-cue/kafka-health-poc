@@ -36,6 +36,7 @@ public class SenderController {
     public ResponseEntity<String> putMessage(@PathVariable String message) {
         var future = kafkaTemplate.send("topic-1", key, message);
         future.addCallback(
+                // SuccessCallback
                 data -> {
                     log.info("Success sending message: {}\n\ttopic {} partition {} offset {} key {} value {}",
                             message,
@@ -47,6 +48,7 @@ public class SenderController {
                     );
                     healthControlPanel.setListenerAlive();
                 },
+                // FailureCallback
                 error -> {
                     log.error("Error sending message: {}, {}", message, error.getMessage(), error);
                     healthControlPanel.setListenerNotAlive();
