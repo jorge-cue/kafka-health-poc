@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.BOOTSTRAP_SERVERS;
+import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.KAFKA_BOOTSTRAP_SERVERS;
 import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
 
 /*
@@ -29,8 +29,8 @@ public class HealthControlPanel {
     private final AtomicBoolean listenerAvailable = new AtomicBoolean(true);
     private final AtomicBoolean producerAvailable = new AtomicBoolean(true);
 
-    private final Counter listenerDeadCount;
-    private final Counter producerDeadCount;
+    private final Counter listenerDeadCount; // Number of times listener has become Not Alive so far.
+    private final Counter producerDeadCount; // Number of times producer has become Not Alive so far.
 
     public HealthControlPanel(MeterRegistry registry) {
         listenerDeadCount = Counter.builder(LISTENER_DEAD_COUNT).register(registry);
@@ -43,10 +43,10 @@ public class HealthControlPanel {
 
     public boolean checkReadiness() {
         /*
-         * Readiness means that this service is able to process incoming network traffic,
-         * for this application it means that Kafka is available for sending events (messages)
+         * Readiness means that this service is able to process incoming network traffic, for this application it means
+         * that our producer is ok and Kafka is available for sending events (messages)
          */
-        return producerAvailable.get();
+        return producerAvailable.get() && kafkaIsAvailable();
     }
 
     public void setListenerNotAlive() {
@@ -87,7 +87,7 @@ public class HealthControlPanel {
 
     private Map<String, Object> adminProperties() {
         var props = new HashMap<String, Object>();
-        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         props.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 1000);
         props.put(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 2000);
         props.put(AdminClientConfig.CLIENT_ID_CONFIG, "khp-admin");
