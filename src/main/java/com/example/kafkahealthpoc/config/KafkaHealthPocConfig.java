@@ -37,7 +37,7 @@ import java.util.Map;
 public class KafkaHealthPocConfig {
 
     public static final String TOPIC_NAME = "kafka-health-poc-topic";
-    public static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    public static final String KAFKA_BOOTSTRAP_SERVERS = "localhost:9092";
 
     // Topic configuration
 
@@ -82,7 +82,7 @@ public class KafkaHealthPocConfig {
 
     private Map<String, Object> consumerProps() {
         var props = new HashMap<String, Object>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "khp-consumer-group-id");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -98,7 +98,7 @@ public class KafkaHealthPocConfig {
 
     private Map<String, Object> senderProps() {
         var props = new HashMap<String, Object>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.ACKS_CONFIG, "all");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);

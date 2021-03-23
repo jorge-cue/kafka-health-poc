@@ -19,7 +19,7 @@ public class KafkaHealthPocListener {
             topics = TOPIC_NAME
     )
     public void handleRecord(ConsumerRecord<String, String> record) {
-        log.info("processing record: {}\ntopic {} partition {} offset {} key {} value {}",
+        log.info("processing record: {}\n\ttopic {} partition {} offset {} key {} value {}",
                 record.value(),
                 record.topic(), record.partition(), record.offset(), record.key(), record.value());
     }
