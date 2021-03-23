@@ -23,6 +23,8 @@ import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
 @Slf4j
 public class HealthControlPanel {
 
+    private final KafkaLivenessProbe kafkaLivenessProbe;
+
     public static final String LISTENER_DEAD_COUNT = "listener-dead-count";
     public static final String PRODUCER_DEAD_COUNT = "producer-dead-count";
 
@@ -32,13 +34,14 @@ public class HealthControlPanel {
     private final Counter listenerDeadCount; // Number of times listener has become Not Alive so far.
     private final Counter producerDeadCount; // Number of times producer has become Not Alive so far.
 
-    public HealthControlPanel(MeterRegistry registry) {
+    public HealthControlPanel(MeterRegistry registry, KafkaLivenessProbe kafkaLivenessProbe) {
         listenerDeadCount = Counter.builder(LISTENER_DEAD_COUNT).register(registry);
         producerDeadCount = Counter.builder(PRODUCER_DEAD_COUNT).register(registry);
+        this.kafkaLivenessProbe = kafkaLivenessProbe;
     }
 
     public boolean checkLiveness() {
-        return listenerAvailable.get() && producerAvailable.get() && kafkaIsAvailable();
+        return listenerAvailable.get() && producerAvailable.get() && kafkaLivenessProbe.kafkaIsAvailable();
     }
 
     public boolean checkReadiness() {
@@ -46,7 +49,7 @@ public class HealthControlPanel {
          * Readiness means that this service is able to process incoming network traffic, for this application it means
          * that our producer is ok and Kafka is available for sending events (messages)
          */
-        return producerAvailable.get() && kafkaIsAvailable();
+        return producerAvailable.get() && kafkaLivenessProbe.kafkaIsAvailable();
     }
 
     public void setListenerNotAlive() {
@@ -67,30 +70,5 @@ public class HealthControlPanel {
 
     public void setProducerAlive() {
         producerAvailable.set(true);
-    }
-
-    private boolean kafkaIsAvailable() {
-        /*
-         * Liveness means that downstream services and infrastructure are available to the app,
-         * for this application it means that Kafka is available for receiving and producing events (messages)
-         */
-        try(KafkaAdminClient adminClient = (KafkaAdminClient) AdminClient.create(adminProperties())) {
-            var result = adminClient.describeTopics(List.of(TOPIC_NAME)).values();
-            var topicDescription = result.get(TOPIC_NAME).get();
-            log.info("Description found for topic {}", topicDescription);
-            return true;
-        } catch (Exception x) {
-            log.error("Error getting description of our topic(s); Is Kafka available?", x);
-        }
-        return false;
-    }
-
-    private Map<String, Object> adminProperties() {
-        var props = new HashMap<String, Object>();
-        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
-        props.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 1000);
-        props.put(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 2000);
-        props.put(AdminClientConfig.CLIENT_ID_CONFIG, "khp-admin");
-        return props;
     }
 }
