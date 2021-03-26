@@ -58,8 +58,6 @@ public class KafkaHealthPocConfig {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, String>();
         factory.setConsumerFactory(consumerFactory);
         factory.setErrorHandler(errorHandler);
-        factory.getContainerProperties().setPollTimeout(3000);
-        factory.getContainerProperties().setStopContainerWhenFenced(true);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
         return factory;
     }

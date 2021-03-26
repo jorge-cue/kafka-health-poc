@@ -1,12 +1,8 @@
 package com.example.kafkahealthpoc.selfheal;
 
-import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.admin.MockAdminClient;
-import org.apache.kafka.clients.admin.TopicDescription;
-import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.Node;
-import org.apache.kafka.common.errors.TimeoutException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.config.TopicBuilder;
 
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -40,30 +36,49 @@ class KafkaLivenessProbeTest {
     @BeforeEach
     void setUp() {
         kafkaLivenessProbe = new KafkaLivenessProbe(kafkaAdminClient);
-
-        List<Node> brokers = List.of(new Node(0, "localhost", 9092));
-        mockAdminClient = new MockAdminClient(brokers, brokers.get(0));
-
-        when(kafkaAdminClient.describeTopics(anyList())).thenAnswer(invocation ->
-                mockAdminClient.describeTopics(invocation.getArgument(0)));
+        // kafkaAdminClient mock delegates to mockAdminClient the descriptions of topics.
+        when(kafkaAdminClient.describeTopics(anyList())).thenAnswer(invocation -> {
+            var topics = invocation.<List<String>>getArgument(0);
+            return mockAdminClient.describeTopics(topics);
+        });
+        // Create Kafka environment to have one Node in the list of brokers and
+        // the same Node as the controller (must be in the list of brokers)
+        var node0 = new Node(0, "kafka0.example.com", 9092);
+        var brokers = List.of(node0);
+        mockAdminClient = new MockAdminClient(brokers, node0);
     }
 
     @Test
-    void kafkaIsAvailable() {
-        // Create the topic so describeTopic bellow has the topic to describe.
-        mockAdminClient.createTopics(List.of(TopicBuilder.name(TOPIC_NAME).partitions(1).replicas(1).build()));
+    void kafkaIsAvailable_TopicExistsAndKafkaIsResponsive() {
+        mockAdminClient.createTopics(List.of(TopicBuilder.name(TOPIC_NAME).partitions(1).replicas(1).build())).all()
+        .whenComplete((result, throwable) -> {
+            boolean isAvailable = kafkaLivenessProbe.kafkaIsAvailable();
 
-        boolean isAvailable = kafkaLivenessProbe.kafkaIsAvailable();
-
-        assertTrue(isAvailable);
-        verify(kafkaAdminClient).describeTopics(anyList());
+            assertTrue(isAvailable);
+            verify(kafkaAdminClient).describeTopics(anyList());
+        });
     }
 
     @Test
-    void kafkaIsNotAvailable() {
+    void kafkaIsAvailable_TopicDoesNotExist() {
         boolean isAvailable = kafkaLivenessProbe.kafkaIsAvailable();
 
         assertFalse(isAvailable);
         verify(kafkaAdminClient).describeTopics(anyList());
+    }
+
+    @Test
+    void kafkaIsAvailable_KafkaIsNotResponsive() {
+        // Create the topic so describeTopic bellow has the topic to describe.
+        mockAdminClient.createTopics(List.of(TopicBuilder.name(TOPIC_NAME).partitions(1).replicas(1).build())).all()
+                .whenComplete((result, throwable) -> {
+                    // Next request will timeout, to simulate kafka not available
+                    mockAdminClient.timeoutNextRequest(1);
+
+                    boolean isAvailable = kafkaLivenessProbe.kafkaIsAvailable();
+
+                    assertFalse(isAvailable);
+                    verify(kafkaAdminClient).describeTopics(anyList());
+                });
     }
 }

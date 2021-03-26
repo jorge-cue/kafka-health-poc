@@ -2,6 +2,7 @@ package com.example.kafkahealthpoc.selfheal;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
  */
 @Component
 @Slf4j
+@Profile("!test")
 public class KafkaLivenessProbe {
 
     private final KafkaAdminClient kafkaAdminClient;

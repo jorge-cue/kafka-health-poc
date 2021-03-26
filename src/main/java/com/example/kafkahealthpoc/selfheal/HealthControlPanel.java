@@ -3,18 +3,9 @@ package com.example.kafkahealthpoc.selfheal;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.KAFKA_BOOTSTRAP_SERVERS;
-import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
 
 /*
  * Created by jhcue on 21/03/2021
