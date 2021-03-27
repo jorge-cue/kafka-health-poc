@@ -3,9 +3,9 @@ package com.example.kafkahealthpoc.config;
 import com.example.kafkahealthpoc.inbound.kafka.KafkaHealthPocConsumer;
 import com.example.kafkahealthpoc.selfheal.HealthControlPanel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -14,6 +14,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
@@ -94,10 +95,10 @@ public class KafkaHealthPocConfig {
 
     @Bean
     public ProducerFactory<String, String> producerFactory() {
-        return new DefaultKafkaProducerFactory<>(senderProps());
+        return new DefaultKafkaProducerFactory<>(producerProps());
     }
 
-    private Map<String, Object> senderProps() {
+    private Map<String, Object> producerProps() {
         var props = new HashMap<String, Object>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.ACKS_CONFIG, "all");
@@ -109,21 +110,5 @@ public class KafkaHealthPocConfig {
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> factory) {
         return new KafkaTemplate<>(factory);
-    }
-
-    // Admin Kafka Client
-
-    @Bean(destroyMethod = "close")
-    public KafkaAdminClient kafkaAdminClient() {
-        return (KafkaAdminClient) AdminClient.create(adminProperties());
-    }
-
-    private Map<String, Object> adminProperties() {
-        var props = new HashMap<String, Object>();
-        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
-        props.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 1000);
-        props.put(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 2000);
-        props.put(AdminClientConfig.CLIENT_ID_CONFIG, "khp-admin");
-        return props;
     }
 }

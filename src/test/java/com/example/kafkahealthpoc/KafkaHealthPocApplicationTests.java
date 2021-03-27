@@ -1,7 +1,7 @@
 package com.example.kafkahealthpoc;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,9 +19,10 @@ class KafkaHealthPocApplicationTests {
     private MockMvc mockMvc;
 
     @Test
+    @Disabled("Depends on Kafka Server running on localhost:9092")
     void smokeTest() throws Exception {
         mockMvc.perform(get("/actuator/health"))
-                .andExpect(status().is2xxSuccessful())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("status").value("UP"));
     }
 }
