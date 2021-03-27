@@ -3,7 +3,9 @@ package com.example.kafkahealthpoc.outbound.kafka;
 import com.example.kafkahealthpoc.selfheal.HealthControlPanel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import java.util.UUID;
 
@@ -28,7 +30,7 @@ public class KafkaHealthPocProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendMessage(String message) {
+    public ListenableFuture<SendResult<String, String>> sendMessage(String message) {
         var future = kafkaTemplate.send(TOPIC_NAME, key, message);
         future.addCallback(
                 // SuccessCallback
@@ -50,5 +52,6 @@ public class KafkaHealthPocProducer {
                 }
         );
         kafkaTemplate.flush();
+        return future;
     }
 }

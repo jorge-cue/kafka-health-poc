@@ -34,7 +34,16 @@ public class SenderController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> postMessage(@RequestBody String message) {
-        kafkaHealthPocProducer.sendMessage(message);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        var result = kafkaHealthPocProducer.sendMessage(message).completable().join();
+
+        var topic = result.getRecordMetadata().topic();
+        var partition = result.getRecordMetadata().partition();
+        var offset = result.getRecordMetadata().offset();
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("{\"topic\":\"" + topic + "\"," +
+                        "\"partition\":" + partition + "," +
+                        "\"offset\":" + offset +
+                        "}");
     }
 }

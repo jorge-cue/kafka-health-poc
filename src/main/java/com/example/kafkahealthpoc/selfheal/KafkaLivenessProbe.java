@@ -2,7 +2,6 @@ package com.example.kafkahealthpoc.selfheal;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.Admin;
-import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.KAFKA_BOOTSTRAP_SERVERS;
 import static com.example.kafkahealthpoc.config.KafkaHealthPocConfig.TOPIC_NAME;
@@ -42,7 +40,7 @@ public class KafkaLivenessProbe {
             return true;
         } catch (Exception x) {
             log.error("Error getting description of topic(s): {}; Is Kafka available?",
-                    topics.stream().collect(Collectors.joining(", ")), x);
+                    String.join(", ", topics), x);
         }
         return false;
     }
