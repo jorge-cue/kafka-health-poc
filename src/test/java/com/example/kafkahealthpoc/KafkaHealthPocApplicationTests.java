@@ -44,8 +44,11 @@ class KafkaHealthPocApplicationTests {
                 () -> {
                     final var objectMapper = new ObjectMapper();
                     final var jsonBody = objectMapper.readValue(response.getBody(), JsonNode.class);
-                    assertNotNull(jsonBody.get("status"));
-                    assertEquals("UP", jsonBody.get("status").asText());
+                    assertAll(
+                            () -> assertNotNull(jsonBody.get("status"), "Missing 'status' field in response"),
+                            () -> assertEquals("UP", jsonBody.get("status").asText(),
+                                    "Expecting status with value 'UP'")
+                    );
                 }
         );
     }

@@ -37,7 +37,7 @@ class KafkaLivenessProbeTest {
         admin = new MockAdminClient(brokers, node0);
 
         kafkaLivenessProbe = new KafkaLivenessProbe();
-        kafkaLivenessProbe.setAdminSupplier(() -> admin);
+        kafkaLivenessProbe.setAdminFactory(() -> admin);
     }
 
     @Test
